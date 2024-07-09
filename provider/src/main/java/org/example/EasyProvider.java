@@ -17,7 +17,6 @@ public class EasyProvider {
         VertxHttpServer vertxHttpServer = new VertxHttpServer();
         vertxHttpServer.start(8080);
 
-        // 实现类调用
         System.out.println("开始提供服务");
     }
 }

@@ -1,14 +1,15 @@
 package org.example.server;
 
 import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
 import org.example.model.RpcRequest;
 import org.example.model.RpcResponse;
 import org.example.registry.LocalRegistry;
 import org.example.serializer.JdkSerializer;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class HttpSeverHandler implements Handler<HttpServerRequest> {
@@ -35,12 +36,12 @@ public class HttpSeverHandler implements Handler<HttpServerRequest> {
 
             // RpcResponse处理
             //构造RpcResponse
-            RpcResponse rpcResponse = null;
+            RpcResponse rpcResponse = new RpcResponse();
 
             // 空RpcRequest 提前返回
             if (rpcRequest == null) {
                 rpcResponse.setMessage("Invalid RpcRequest");
-                doResponse(rpcResponse,jdkSerializer);
+                doResponse(event,rpcResponse,jdkSerializer);
                 return;
             }
 
@@ -50,26 +51,37 @@ public class HttpSeverHandler implements Handler<HttpServerRequest> {
             Class<?> serviceClass = LocalRegistry.getService(rpcRequest.getServiceName());
             if (serviceClass == null) {
                 rpcResponse.setMessage("Service not found");
-                doResponse(rpcResponse,jdkSerializer);
+                doResponse(event,rpcResponse,jdkSerializer);
                 return;
             }
             try {
                 Method method = serviceClass.getMethod(rpcRequest.getMethodName(), rpcRequest.getParamTypes());
-                Object invoke = method.invoke(rpcRequest.getParamTypes());
+                Object invoke = method.invoke(serviceClass.newInstance(),rpcRequest.getParams());
+                // 封装rpcResponse
+                rpcResponse.setData(invoke);
+                rpcResponse.setMessage("ok");
+                rpcResponse.setDataType(method.getReturnType());
             } catch (Exception e) {
-                System.out.println("No such method: " + rpcRequest.getMethodName());
-                throw new RuntimeException(e);
+                e.printStackTrace();
+                rpcResponse.setMessage(e.getMessage());
             }
-
-
+            doResponse(event,rpcResponse,jdkSerializer);
         });
 
     }
 
     // 添加返回信息 HttpServerResponse
-    // 序列化
-    // vertx 缓存化
-    public void doResponse(RpcResponse rpcResponse,JdkSerializer jdkSerializer) {
-
+    // 返回对象序列化(类对象传输需求)
+    // 返回对象缓存化（vertx的特性需求）
+    public void doResponse(HttpServerRequest request,RpcResponse rpcResponse,JdkSerializer jdkSerializer) {
+        HttpServerResponse response = request.response().
+                putHeader("Content-Type", "application/json");
+        try {
+            byte[] serialize = jdkSerializer.serialize(rpcResponse);
+            response.end(Buffer.buffer(serialize));
+        } catch (IOException e) {
+            e.printStackTrace();
+            response.end(Buffer.buffer());
+        }
     }
 }
