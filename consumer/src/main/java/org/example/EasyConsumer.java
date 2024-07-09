@@ -1,6 +1,8 @@
 package org.example;
 
 import org.example.model.User;
+import org.example.proxy.ServiceProxy;
+import org.example.proxy.ServiceProxyFactory;
 import org.example.service.UserService;
 
 public class EasyConsumer {
@@ -10,7 +12,7 @@ public class EasyConsumer {
 
         // 模拟远程调用服务
         // 代理类
-        UserService userService = new UserServiceProxy();
+        UserService userService = ServiceProxyFactory.getProxy(UserService.class);
 
         User getUser = userService.getUser(user);
         if (getUser != null) {

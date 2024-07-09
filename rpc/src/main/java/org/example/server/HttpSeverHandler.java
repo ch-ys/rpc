@@ -67,7 +67,6 @@ public class HttpSeverHandler implements Handler<HttpServerRequest> {
             }
             doResponse(event,rpcResponse,jdkSerializer);
         });
-
     }
 
     // 添加返回信息 HttpServerResponse
