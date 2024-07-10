@@ -4,4 +4,6 @@ import org.example.model.User;
 
 public interface UserService {
    User getUser(User user);
+
+   String mock();
 }

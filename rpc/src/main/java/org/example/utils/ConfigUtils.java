@@ -12,6 +12,7 @@ public class ConfigUtils {
         return loadConfig(tClass, prefix, "");
     }
 
+    // 根据配置文件名称查找配置文件并生成配置都对象
     public static <T> T loadConfig(Class<T> tClass, String prefix, String environment) {
         StringBuilder configFileBuilder = new StringBuilder("application");
         if (StrUtil.isNotBlank(environment)) {

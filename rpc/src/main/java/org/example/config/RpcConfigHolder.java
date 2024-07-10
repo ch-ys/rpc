@@ -1,12 +1,10 @@
 package org.example.config;
 
-import lombok.extern.slf4j.Slf4j;
 import org.example.constant.RpcConstant;
 import org.example.utils.ConfigUtils;
 
 // 维护单一配置对象
-
-public class RpcApplication {
+public class RpcConfigHolder {
     private static volatile RpcConfig rpcConfig;
 
     // 指定配置
@@ -27,10 +25,10 @@ public class RpcApplication {
     }
 
     // 获取配置对象
-    // 双锁 防止获取刚创建完都对象释放的锁
+    // 双锁
     public static RpcConfig getRpcConfig() {
         if (rpcConfig == null) {
-            synchronized (RpcApplication.class) {
+            synchronized (RpcConfigHolder.class) {
                 if (rpcConfig == null) {
                     init();
                 }
@@ -38,5 +36,4 @@ public class RpcApplication {
         }
         return rpcConfig;
     }
-
 }

@@ -28,15 +28,20 @@ public class UserServiceProxy implements UserService {
         // 请求 响应处理
         // 地址注册中心实现
         try {
-            byte[] rpcRequestSerialize = jdkSerializer.serialize(rpcRequest);
+            byte[] rpcRequestSerialize = jdkSerializer.doSerialize(rpcRequest);
             HttpResponse response = HttpRequest.post("localhost:8080").body(rpcRequestSerialize).execute();
             byte[] RpcResponseBytes = response.bodyBytes();
-            RpcResponse rpcResponse = jdkSerializer.deserialize(RpcResponseBytes, RpcResponse.class);
+            RpcResponse rpcResponse = jdkSerializer.deSerialize(RpcResponseBytes, RpcResponse.class);
             return (User) rpcResponse.getData();
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("RPC调用失败");
         }
         return null;
+    }
+
+    @Override
+    public String mock() {
+        return "";
     }
 }

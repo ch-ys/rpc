@@ -4,10 +4,12 @@ import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
+import org.example.config.RpcConfigHolder;
 import org.example.model.RpcRequest;
 import org.example.model.RpcResponse;
 import org.example.registry.LocalRegistry;
-import org.example.serializer.JdkSerializer;
+import org.example.serializer.Serializer;
+import org.example.serializer.SerializerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -17,7 +19,7 @@ public class HttpSeverHandler implements Handler<HttpServerRequest> {
     @Override
     public void handle(HttpServerRequest event) {
         // 序列化器
-        JdkSerializer jdkSerializer = new JdkSerializer();
+        Serializer serializer = SerializerFactory.getSerializer(RpcConfigHolder.getRpcConfig().getSERIALIZER());
 
         // 消息处理
         event.bodyHandler(body -> {
@@ -28,7 +30,7 @@ public class HttpSeverHandler implements Handler<HttpServerRequest> {
             //HttpServerRequest -> RpcRequest
             RpcRequest rpcRequest = null;
             try {
-                rpcRequest = jdkSerializer.deserialize(bytes, RpcRequest.class);
+                rpcRequest = serializer.deSerialize(bytes, RpcRequest.class);
             } catch (IOException e) {
                 System.out.println("Error deserializing RpcRequest");
                 throw new RuntimeException(e);
@@ -41,7 +43,7 @@ public class HttpSeverHandler implements Handler<HttpServerRequest> {
             // 空RpcRequest 提前返回
             if (rpcRequest == null) {
                 rpcResponse.setMessage("Invalid RpcRequest");
-                doResponse(event,rpcResponse,jdkSerializer);
+                doResponse(event,rpcResponse,serializer);
                 return;
             }
 
@@ -51,7 +53,7 @@ public class HttpSeverHandler implements Handler<HttpServerRequest> {
             Class<?> serviceClass = LocalRegistry.getService(rpcRequest.getServiceName());
             if (serviceClass == null) {
                 rpcResponse.setMessage("Service not found");
-                doResponse(event,rpcResponse,jdkSerializer);
+                doResponse(event,rpcResponse,serializer);
                 return;
             }
             try {
@@ -65,18 +67,18 @@ public class HttpSeverHandler implements Handler<HttpServerRequest> {
                 e.printStackTrace();
                 rpcResponse.setMessage(e.getMessage());
             }
-            doResponse(event,rpcResponse,jdkSerializer);
+            doResponse(event,rpcResponse,serializer);
         });
     }
 
     // 添加返回信息 HttpServerResponse
     // 返回对象序列化(类对象传输需求)
     // 返回对象缓存化（vertx的特性需求）
-    public void doResponse(HttpServerRequest request,RpcResponse rpcResponse,JdkSerializer jdkSerializer) {
+    public void doResponse(HttpServerRequest request,RpcResponse rpcResponse,Serializer serializer) {
         HttpServerResponse response = request.response().
                 putHeader("Content-Type", "application/json");
         try {
-            byte[] serialize = jdkSerializer.serialize(rpcResponse);
+            byte[] serialize = serializer.doSerialize(rpcResponse);
             response.end(Buffer.buffer(serialize));
         } catch (IOException e) {
             e.printStackTrace();

@@ -2,9 +2,11 @@ package org.example.proxy;
 
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
+import org.example.config.RpcConfigHolder;
 import org.example.model.RpcRequest;
 import org.example.model.RpcResponse;
-import org.example.serializer.JdkSerializer;
+import org.example.serializer.Serializer;
+import org.example.serializer.SerializerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
@@ -17,7 +19,7 @@ public class ServiceProxy implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         // 序列化器
-        JdkSerializer jdkSerializer = new JdkSerializer();
+        Serializer serializer = SerializerFactory.getSerializer(RpcConfigHolder.getRpcConfig().getSERIALIZER());
 
         // RpcRequest处理
         // RpcRequest构造
@@ -30,10 +32,10 @@ public class ServiceProxy implements InvocationHandler {
         // 请求 响应处理
         // 地址注册中心实现
         try {
-            byte[] rpcRequestSerialize = jdkSerializer.serialize(rpcRequest);
+            byte[] rpcRequestSerialize = serializer.doSerialize(rpcRequest);
             HttpResponse response = HttpRequest.post("localhost:8080").body(rpcRequestSerialize).execute();
             byte[] RpcResponseBytes = response.bodyBytes();
-            RpcResponse rpcResponse = jdkSerializer.deserialize(RpcResponseBytes, RpcResponse.class);
+            RpcResponse rpcResponse = serializer.deSerialize(RpcResponseBytes, RpcResponse.class);
             return rpcResponse.getData();
         } catch (IOException e) {
             e.printStackTrace();
