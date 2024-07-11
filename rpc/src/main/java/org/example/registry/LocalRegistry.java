@@ -2,6 +2,7 @@ package org.example.registry;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+//本地服务类注册器
 public class LocalRegistry {
     private static final ConcurrentHashMap<String, Class<?>> registry = new ConcurrentHashMap<>();
 
