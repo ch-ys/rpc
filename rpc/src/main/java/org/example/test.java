@@ -33,5 +33,4 @@ public class test {
         Serializer serializer = SerializerFactory.getSerializer(RpcConfigHolder.getRpcConfig().getSerializer());
         System.out.println(serializer);
     }
-
 }
