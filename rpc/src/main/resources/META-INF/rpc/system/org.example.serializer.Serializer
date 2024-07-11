@@ -1,0 +1,2 @@
+JDK=org.example.serializer.JdkSerializer
+JSON=org.example.serializer.JsonSerializer
