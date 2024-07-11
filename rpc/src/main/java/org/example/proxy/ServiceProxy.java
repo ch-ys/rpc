@@ -19,7 +19,7 @@ public class ServiceProxy implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         // 序列化器
-        Serializer serializer = SerializerFactory.getSerializer(RpcConfigHolder.getRpcConfig().getSERIALIZER());
+        Serializer serializer = SerializerFactory.getSerializer(RpcConfigHolder.getRpcConfig().getSerializer());
 
         // RpcRequest处理
         // RpcRequest构造

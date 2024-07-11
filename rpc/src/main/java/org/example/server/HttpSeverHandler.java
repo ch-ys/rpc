@@ -19,7 +19,7 @@ public class HttpSeverHandler implements Handler<HttpServerRequest> {
     @Override
     public void handle(HttpServerRequest event) {
         // 序列化器
-        Serializer serializer = SerializerFactory.getSerializer(RpcConfigHolder.getRpcConfig().getSERIALIZER());
+        Serializer serializer = SerializerFactory.getSerializer(RpcConfigHolder.getRpcConfig().getSerializer());
 
         // 消息处理
         event.bodyHandler(body -> {

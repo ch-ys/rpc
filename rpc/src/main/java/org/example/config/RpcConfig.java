@@ -14,5 +14,5 @@ public class RpcConfig {
     private Integer port = 8080;
     private String name = "default-rpc";
     private boolean isMock = false;
-    private String SERIALIZER = SerializerKeys.JDK_SERIALIZER;
+    private String serializer = SerializerKeys.JDK_SERIALIZER;
 }
